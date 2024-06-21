@@ -1,11 +1,15 @@
 package project.nutri.services;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import project.nutri.entities.User;
+import project.nutri.exceptions.RulesException;
 import project.nutri.repositories.UserRepository;
+import project.nutri.utils.Encrypt;
 
 @Service
 public class UserService {
@@ -16,29 +20,41 @@ public class UserService {
         return repository.findAll();
     }
 
-    public User findById(Long id) {
-        Optional<User> obj = repository.findById(id);
-        return obj.get();
+    public Optional<User> findById(Long id) {
+        Optional<User> user = repository.findById(id);
+        if (!user.isPresent())
+            throw new RulesException("USUÁRIO NÃO ENCONTRADO!");
+        return user;
     }
 
-    public User findByName(String name) {
-        return repository.findByName(name);
+    public Optional<User> findByName(String name) {
+        Optional<User> user = repository.findByName(name);
+        if (!user.isPresent())
+            throw new RulesException("USUÁRIO NÃO ENCONTRADO!");
+        return user;
     }
 
-    public void saveOrUpdate(User user) {
-        if(user.getId() == null)
-            repository.save(user);
-        else {
-            User existingUser = repository.findById(user.getId()).orElse(null);
-            existingUser.setName(user.getName());
-            existingUser.setEmail(user.getEmail());
-            existingUser.setPassword(user.getPassword());
-            existingUser.setLastLogin(user.getLastLogin());
-            repository.save(existingUser);
-        }
-    }    
+    public User save(User user) {
+        return repository.save(user);
+    }
+
+    public User update(User user) {
+        Objects.requireNonNull(user.getId(), "ID DO USUÁRIO NÃO PODE SER NULO!");
+        return repository.save(user);
+    }
 
     public void delete(Long id) {
-        repository.deleteById(id);
+        User user = findById(id).orElseThrow(() -> new RulesException("USUÁRIO NÃO ENCONTRADO!"));
+        repository.deleteById(user.getId());
+    }
+
+    public boolean authentication(String name, String password) {
+        User user = findByName(name).orElseThrow(() -> new RulesException("USUÁRIO NÃO ENCONTRADO!"));
+        if (Encrypt.validatePassword(password, user.getPassword())) {
+            user.setLastLogin(LocalDateTime.now());
+            save(user);
+            return true;
+        }
+        return false;
     }
 }

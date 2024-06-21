@@ -18,8 +18,7 @@ import project.nutri.utils.Encrypt;
 @Table(name = "users")
 @Data
 @NoArgsConstructor
-public class User implements Serializable
-{
+public class User implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
@@ -34,12 +33,11 @@ public class User implements Serializable
     private LocalDateTime registrationDate;
     private LocalDateTime lastLogin;
 
-    public User(Long id, String name, String email, String password, LocalDateTime registrationDate, LocalDateTime lastLogin) {
+    public User(Long id, String name, String email, String password) {
         this.id = id;
         this.name = name.toUpperCase();
         this.email = email;
         this.password = Encrypt.encoder(password);
-        this.registrationDate = registrationDate;
-        this.lastLogin = lastLogin;
+        this.registrationDate = LocalDateTime.now();
     }
 }
