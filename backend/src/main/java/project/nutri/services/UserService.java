@@ -35,6 +35,7 @@ public class UserService {
     }
 
     public User save(User user) {
+        emailValidation(user.getEmail());
         return repository.save(user);
     }
 
@@ -48,11 +49,18 @@ public class UserService {
         repository.deleteById(user.getId());
     }
 
-    public boolean authentication(String name, String password) {
-        User user = findByName(name).orElseThrow(() -> new RulesException("USUÁRIO NÃO ENCONTRADO!"));
-        if (Encrypt.validatePassword(password, user.getPassword())) {
-            user.setLastLogin(LocalDateTime.now());
-            save(user);
+    private void emailValidation(String email) {
+        if(repository.existsByEmail(email))
+            throw new RulesException("JÁ EXISTE UM USUÁRIO CADASTRADO COM ESTE E-MAIL!");
+    }
+
+    public boolean authentication(String email, String password) {
+        Optional<User> user = repository.findByEmail(email);
+        if(!user.isPresent())
+            throw new RulesException("USUÁRIO NÃO ENCONTRADO!");
+        if(Encrypt.validatePassword(password, user.get().getPassword())) {
+            user.get().setLastLogin(LocalDateTime.now());
+            update(user.get());
             return true;
         }
         return false;

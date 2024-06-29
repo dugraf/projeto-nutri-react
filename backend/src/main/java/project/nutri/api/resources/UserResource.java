@@ -22,7 +22,6 @@ import project.nutri.utils.Encrypt;
 @RestController
 @RequestMapping("/users")
 public class UserResource {
-
     @Autowired
     private UserService service;
 
@@ -73,12 +72,12 @@ public class UserResource {
     }
 
     @PostMapping("/authenticate")
-    public ResponseEntity<?> authenticate(@RequestParam String name, @RequestParam String password) {
+    public ResponseEntity<?> authenticate(@RequestParam String email, @RequestParam String password) {
         try {
-            if(service.authentication(name, password))
-                return ResponseEntity.ok("AUTENTICAÇÃO FEITA COM SUCESSO");
+            if(service.authentication(email, password))
+                return ResponseEntity.ok("AUTENTICAÇÃO FEITA COM SUCESSO!");
             else
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("USUÁRIO OU SENHA INVÁLIDOS!");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("AUTENTICAÇÃO INVÁLIDA!");
         } catch(RulesException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
